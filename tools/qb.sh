@@ -5,7 +5,8 @@
 #   PROGRAM.BAS - Opens program in QB editor
 #   PROGRAM.BAS run - Runs the program directly
 
-QBASIC_DIR="/Users/dewittn/Programing/dewittn/Other/QBasic"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+QBASIC_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Determine what to launch
 PROGRAM="$1"
@@ -14,15 +15,17 @@ RUN_MODE="$2"
 # Build the autoexec commands
 if [ -z "$PROGRAM" ]; then
     # No program - just open QB
-    QB_CMD="QB.EXE"
+    QB_CMD="qbasic-runtime\\QB.EXE"
     echo "Launching QuickBASIC IDE..."
 elif [ "$RUN_MODE" = "run" ]; then
-    # Run the program directly
-    QB_CMD="QB.EXE /RUN $PROGRAM"
+    # Run the program directly (convert path to DOS format)
+    DOS_PROGRAM=$(echo "$PROGRAM" | sed 's|/|\\|g')
+    QB_CMD="qbasic-runtime\\QB.EXE /RUN $DOS_PROGRAM"
     echo "Running: $PROGRAM"
 else
-    # Open program in editor
-    QB_CMD="QB.EXE $PROGRAM"
+    # Open program in editor (convert path to DOS format)
+    DOS_PROGRAM=$(echo "$PROGRAM" | sed 's|/|\\|g')
+    QB_CMD="qbasic-runtime\\QB.EXE $DOS_PROGRAM"
     echo "Opening: $PROGRAM"
 fi
 
