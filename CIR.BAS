@@ -1,0 +1,15 @@
+DO
+SCREEN 12
+RANDOMIZE TIMER
+a = RND * 640
+B = RND * 480
+C = RND * 15 + 1
+D = RND * 30
+FOR X = 1 TO D
+CIRCLE (a, B), (X), C
+NEXT X
+FOR X = 1 TO D
+CIRCLE (a, B), (X), 0
+NEXT X
+LOOP UNTIL INKEY$ = CHR$(27)
+

@@ -1,0 +1,143 @@
+DEFINT A-Z
+
+
+'LCA Compressor V1.0
+'by Hauke Daempfling
+'April/May 1996
+SUB LCA2comp (InFile$, OutFile$, BuffLen, Msg$)
+'*** Prepare vars. & error checking
+InFile$ = LTRIM$(RTRIM$(InFile$))
+OutFile$ = LTRIM$(RTRIM$(OutFile$))
+IF InFile$ = "" THEN Msg$ = "ERROR: No input file": EXIT SUB
+IF OutFile$ = "" THEN Msg$ = "ERROR: No output file": EXIT SUB
+IF BuffLen < 256 OR BuffLen > 10000 THEN Msg$ = "ERROR: Invalid buffer size (Values: 256-10000)": EXIT SUB
+IF BuffLen * 2 > FRE("Free Memory") - 4096 THEN Msg$ = "ERROR: Buffer too big (Out of memory)": EXIT SUB
+DIM BitMask(8): FOR a = 0 TO 8: BitMask(a) = 2 ^ a: NEXT a
+DIM SwitchList(255), CodeList(255, 8), MaxCodes
+InBuffer$ = STRING$(BuffLen, 0)
+OutBuffer$ = ""
+
+'*** Check Input file
+F1 = FREEFILE
+OPEN InFile$ FOR BINARY AS #F1
+IF LOF(F1) = 0 THEN
+  Msg$ = "ERROR: " + InFile$ + " not found"
+  CLOSE #F1
+  KILL InFile$
+  EXIT SUB
+END IF
+
+'*** Check Output file
+F2 = FREEFILE
+OPEN OutFile$ FOR BINARY AS #F2
+IF LOF(F2) THEN
+  Msg$ = "ERROR: " + OutFile$ + " already exists"
+  CLOSE #F2
+  EXIT SUB
+END IF
+DIM Fpos AS LONG, FileLen AS LONG
+FileLen = LOF(F1)
+
+'*** Get distrib.
+'PRINT "Scanning file and generating codes..."
+Rpos = BuffLen + 1
+FOR Fpos = 1 TO FileLen
+  IF Rpos > BuffLen THEN
+    GET #F1, , InBuffer$
+    Rpos = 1
+  END IF
+  CurByte = ASC(MID$(InBuffer$, Rpos, 1))
+  Rpos = Rpos + 1
+  SwitchList(CurByte) = 1
+NEXT Fpos
+SEEK #F1, 1
+
+'*** Generate Codes
+MaxCodes = -1
+FOR a = 0 TO 255
+  IF SwitchList(a) THEN
+    MaxCodes = MaxCodes + 1
+    'PRINT "Code for"; a; "(code"; MaxCodes; ") :";
+    CodeList(a, 0) = MaxCodes
+    FOR b = 1 TO 8
+      CodeList(a, b) = (MaxCodes AND BitMask(b - 1)) \ BitMask(b - 1)
+      'PRINT CodeList(a, b);
+    NEXT b
+    'PRINT
+  END IF
+NEXT a
+'SLEEP
+IF MaxCodes = -1 THEN
+  Msg$ = "ERROR: Internal error - check input file"
+  CLOSE #F1, #F2
+  KILL OutFile$
+  EXIT SUB
+END IF
+'PRINT "Codes: "; MaxCodes + 1
+
+'*** Find max. code size
+FOR a = 0 TO 7
+  IF MaxCodes > BitMask(a) - 1 THEN
+    NeedBits = a + 1
+  ELSE
+    EXIT FOR
+  END IF
+NEXT a
+'PRINT "Bits needed:"; NeedBits
+IF NeedBits = 0 THEN
+  Msg$ = "ERROR: Internal error - check input file"
+  CLOSE #F1, #F2
+  KILL OutFile$
+  EXIT SUB
+END IF
+
+'*** Write Header
+'PRINT "Compressing and writing file..."
+'* LCA ID string
+OutBuffer$ = OutBuffer$ + "LCAF"
+'* LCA Version
+OutBuffer$ = OutBuffer$ + CHR$(&H20)
+'* Old file size
+Byte1 = (FileLen \ &H1) AND &HFF
+Byte2 = (FileLen \ &H100) AND &HFF
+Byte3 = (FileLen \ &H10000) AND &HFF
+Byte4 = (FileLen \ &H1000000) AND &HFF
+OutBuffer$ = OutBuffer$ + CHR$(Byte1) + CHR$(Byte2) + CHR$(Byte3) + CHR$(Byte4)
+'* Reserved for new file size
+OutBuffer$ = OutBuffer$ + "    "
+'* Options reserved for future versions
+OutBuffer$ = OutBuffer$ + CHR$(255)
+'* Compression codes
+SWout = 0: CurByte = 0
+FOR a = 1 TO 32
+  FOR b = 0 TO 7
+    'PRINT SwitchList(SWout);
+    IF SwitchList(SWout) THEN
+      CurByte = CurByte + BitMask(b)
+    END IF
+    SWout = SWout + 1
+  NEXT b
+  OutBuffer$ = OutBuffer$ + CHR$(CurByte)
+  CurByte = 0
+NEXT a
+'PRINT
+'SLEEP
+'* Start of file code
+OutBuffer$ = OutBuffer$ + "SOCF"
+
+
+'*** Compress
+Rpos = BuffLen + 1
+FOR Fpos = 1 TO FileLen
+  IF Rpos > BuffLen THEN
+    'PRINT ".";
+    GET #F1, , InBuffer$
+    Rpos = 1
+  END IF
+  CurByte = ASC(MID$(InBuffer$, Rpos, 1))
+  Rpos = Rpos + 1
+  cCode = CodeList(CurByte, 0)
+
+NEXT Fpos
+END SUB
+

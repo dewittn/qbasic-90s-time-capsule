@@ -1,0 +1,47 @@
+***** BitEdit Library Documentation *****
+
+ by Hauke Daempfling
+ EMail: hcd@berlin.snafu.de
+
+   Copyright 1996 Hauke Daempfling.
+   All Rights Reserved. All rights not expressly
+   licensed to the user are reserved to the developer.
+
+
+Files in this package:
+BIT_EDIT.TXT - This text file.
+BIT_EDIT.LIB - The BitEdit Library in the standard library format.
+BIT_EDIT.QLB - The BitEdit Library in the QuickLibrary format.
+BIT_EDIT.OBJ - The BitEdit object file.
+BIT_EDIT.BI  - Include file for the BitEdit Library.
+BIT_DEMO.BAS - Demo for the BitEdit Library
+
+This is a little library made for editing single bits from the _lower_8_
+_bits_ of an integer. The functions & subs of the BitEdit lib are:
+
+ BitStr$(Num%) - Returns Num% as a string of 8 1's and 0's.
+ 
+ BitVal%(wBit$) - Returns the value of the byte in wBit$. wBit$ must be
+   a string of 8 1's and 0's.
+
+ BitShift Num%, WhichWay%, HowMany% - Shifts the bits in Num% by HowMany%
+   spaces. WhichWay% can be either 0 for a left shift or anyting else for a
+   right shift. HowMany% can also be seen as how many zeros are added to
+   whatever side of the byte (that my be easier to visualize).
+
+ BitSet Num%, wBit%, bSet% - Sets the bit at space wBit% in Num% to bSet%.
+   Please note that this sub is a bit slower then the others. If you are
+   using it in a program going for speed I would reccomend directly editing
+   the bits in a string (although if you are only setting one bit in one
+   number then BitSet would be faster).
+
+ BitGet%(Num%, wBit%) - Returns the value of the bit at space wBit% in Num%.
+
+PLEASE NOTE:
+ -> This program reads bytes from right to left.
+ -> The first bit space is always 1 (not 0), and the last 8.
+ -> This program only uses the _lower_ 8 bits of a byte, and integers that
+    are greater than 255 are ANDed with 255 (you can also use a single
+    character to store the values, but remember to convert the values back).
+ -> Remember to $INCLUDE the BIT_EDIT.BI file into yor program so that the
+    subs and functions are defined correctly.

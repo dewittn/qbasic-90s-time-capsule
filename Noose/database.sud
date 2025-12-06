@@ -1,0 +1,60 @@
+Room
+Universal SUD Room
+This room is the main room of the SUD. It is the room you are transported\rto when you type 'HOME', the commands of all objects placed here can be\raccessed in the whole SUD, and you cannot '@kill' it.
+ 1 
+ 3 
+ 1 
+ 5 
+Room
+Manager's Office
+
+ 1 
+ 4 
+ 1 
+ 6 
+Exit
+Out
+
+ 0 
+ 2 
+O
+ 0 
+
+Exit
+SUD Universal Contol Room
+
+ 0 
+ 1 
+CR
+ 0 
+
+Obj
+Universal Object 1
+
+ 0 
+ 0 
+
+
+
+
+
+
+
+
+
+
+Obj
+Door Lock
+
+ 1 
+ 1 
+$UNLOCK CR=HAUK:@emit The door to the Universal Control Room is unlocked.;@unlock cr
+$LOCK CR=HAUK:@emit The door to the Universal Control Room is locked.;@lock cr
+
+
+
+
+
+
+
+

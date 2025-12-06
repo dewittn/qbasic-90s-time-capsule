@@ -1,0 +1,21 @@
+
+Memory Type        Total  =   Used  +   Free
+----------------  -------   -------   -------
+Conventional         640K      461K      179K
+Upper                 91K       23K       68K
+Reserved             384K      384K        0K
+Extended (XMS)*   15,269K    2,549K   12,720K
+----------------  -------   -------   -------
+Total memory      16,384K    3,418K   12,966K
+
+Total under 1 MB     731K      485K      246K
+
+Total Expanded (EMS)                15,680 (16,056,320 bytes
+Free Expanded (EMS)*                12,960 (13,271,040 bytes
+
+* EMM386 is using XMS memory to simulate EMS memory as needed.
+  Free EMS memory may change as free XMS memory changes.
+
+Largest executable program size       178K (182,640 bytes)  
+Largest free upper memory block        68K  (69,120 bytes)  
+MS-DOS is resident in the high memory area.

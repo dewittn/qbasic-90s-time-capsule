@@ -1,0 +1,136 @@
+             Hauke's World - A Single User Dimension by Hauke Daempfling
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        Manual
+                                        ^^^^^^
+  Hauke's World SUD
+    Version 1.0
+ by Hauke Daempfling
+  (c)1996 VividSoft
+
+In this Manual:
+I)      Terms used in this manual
+II)     What is a SUD?
+III)    What is the DB and how does it work?
+IV)     Navigating in a SUD
+V)      Advanced SUD Commands
+VI)     Flags and Registers 
+VII)    Coding in a SUD
+VIII)   Coding Command Summary
+IX)     A last word 
+
+        I. Terms used in this manual
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Here are a few general terms used in this manual (explained later).
+
+SUD            -       Single User Dimension
+DB             -       DataBase
+DB Nr / DB#    -       DataBase Number
+Reg            -       Reister
+Parse          -       Process a command
+Parser         -       Part of the program that processes commands
+Pre-Parse(r)   -  Part of the program that processes functions
+Thing          -       Object, Room, or Exit
+Universal      -     Avialable to the whole SUD
+
+
+        II. What is a SUD?
+        ^^^^^^^^^^^^^^^^^^
+You are probably asking: "What is a SUD?". Well, A Single User
+Dimension is based on Things. A Thing is either a Object, Room,
+or Exit. Each functions in a different way. You can pick up or drop
+and object, you can connect rooms and walk throgh exits, and you
+can walk into or put objects in rooms. Using these three types of
+Things, you can build up whole worlds. Well, you ask, what is so
+special about setting up endless sieries of rooms? Wouldn't that
+get a bit boring? The answer would be no, because SUDs have
+one special thing: you can code objects so they can execute special
+commands and even make these commands universal. This gives a neat
+touch to the game. You can code TVs, spaceships, and even whole
+worlds.
+
+        III. What is the DB and how does it work?
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The DataBase is the main part of a SUD or any other SUD-like game.
+It stores all information about the Things in the SUD. Each thing has
+its own number, called the DB Number, which never changes (unless
+the Thing is destoryed). You can imagine the DB Nr like a filename.
+There are special sections in each "file" that store the data that
+is needed for that object. When a object is destroyed all the data
+in a "file" is deleted and the filename (DB Nr) is marked "FREE".
+The general input (the way you should type it) syntax of a DB is
+"#(DB Nr)", and the general output (the way it is displayed) syntax
+is "# (DB Nr)". The best way to find an object is by using its DB Nr
+because it is unique.
+
+        IV. Navigating in a SUD
+        ^^^^^^^^^^^^^^^^^^^^^^^
+General SUD commands:
+
+LOOK or L (Look around)
+        The easiest command. Makes you look around the room you are
+        currently in. (SEE: L [THING])
+
+I (Inventory)
+        With this command you can see what you are carrying. The maximum
+        number of objects you can carry is limited to the amount of memory
+        availiable. (SEE: TAKE, DROP)
+
+TAKE [OBJECT] (Pick up)
+        With TAKE you can pick up an object if it is in your location.
+        The object is placed in your inventory. (SEE: I)
+
+DROP [OBJECT] (Put down)
+        Just the opposite of TAKE, you take an object out of your
+        inventory and put it in your location. (SEE: I)
+
+L [THING] (Look at an object)
+        Look at the Thing [THING]. [THING] can be an Object, Exit, "here"
+        (for the room you are in), or a DB Nr.
+
+GO [EXIT ALIAS] (Walk through an Exit)
+        Causes you to walk through an Exit in your location. [EXIT ALIAS]
+        means the letters in the <>'s after the Exit. Instead of typing
+        "GO [EXIT ALIAS]" every time, you can just type the [EXIT ALIAS].
+
+
+        V. Advanced SUD Commands
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+Advanced SUD Commands:
+EX [THING] (Examine)
+        Shows you all the data on the Thing [THING]. For a Room that would
+        be description, contents, and exits. For a Exit that would be from,
+        to, lock, and description. For a Object description, location, V-Regs,
+        and lock. [THING] can be a name of a thing, "here", or a DB Nr.
+@find [THING] (List [THING]s or find [THING]s)
+        This command has two ways to be used: with a name or with a DB Nr.
+        If you use a name for [THING], @find will list all the things in
+        the DB with the name (or alias for Exits) [THING]. If you use a
+        DB Nr for [THING], @find will locate the object (or exit, no rooms)
+        for you. NOTE: @find may return nothing, meaning that it did
+        not find the thing.
+@listall (List DB)
+        A simple command which shows you the Things in the DB. This is useful
+        if you want to check if there are any "stray" objects in the DB.
+@tel [ROOM DB NR] (Teleport into a room)
+        @tel is short for teleport. The command is very simple. Used if you
+        want to "jump" to a room.
+
+Thing Commands:
+@name [OLD NAME]=[NEW NAME] (Change something's name)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
