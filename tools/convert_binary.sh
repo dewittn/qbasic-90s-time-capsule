@@ -2,66 +2,13 @@
 # QBasic Binary to Text Converter
 # Uses DOSBox and AppleScript automation on macOS
 
-QBASIC_DIR="/Users/dewittn/Programing/dewittn/Other/QBasic"
-CONVERTED_DIR="$QBASIC_DIR/converted"
-
-# Create converted directory if it doesn't exist
-mkdir -p "$CONVERTED_DIR"
-
-# List of binary files to convert (root directory only for first pass)
-BINARY_FILES=(
-    "ABLRA5.BAS"
-    "ALBRA4-3.BAS"
-    "ALBRA4-4.BAS"
-    "ALBRA5-6.BAS"
-    "ALBRE5-4.BAS"
-    "ALGEBRA2.BAS"
-    "ASCII.BAS"
-    "BOUNCE.BAS"
-    "BOUNCE2.BAS"
-    "BOUNCE3.BAS"
-    "CIRSTNG2.BAS"
-    "CIRSTNGE.BAS"
-    "CONCET4.BAS"
-    "DATA.BAS"
-    "END.BAS"
-    "END2.BAS"
-    "FAKEDOS.BAS"
-    "FLYASTX.BAS"
-    "FORMAT_C.BAS"
-    "HAUKE.BAS"
-    "JOYGRAF.BAS"
-    "JOYGRAF2.BAS"
-    "JOYINFO.BAS"
-    "JOYSTICK.BAS"
-    "JOYSTIK.BAS"
-    "LINBONCE.BAS"
-    "LINEA.BAS"
-    "LINES.BAS"
-    "MATH.BAS"
-    "MATH2.BAS"
-    "MATH3.BAS"
-    "MONEY.BAS"
-    "NWAUTO.BAS"
-    "Pcswipe.bas"
-    "QCARDS.BAS"
-    "SCREEN.BAS"
-    "SENSUB.BAS"
-    "SHBONCE2.BAS"
-    "SQUBONC2.BAS"
-    "SQUBONC3.BAS"
-    "SQUBONCE.BAS"
-    "STARTUP.BAS"
-    "Swipenos.bas"
-    "TEST.BAS"
-    "TORUS.BAS"
-    "XWAUTO.BAS"
-)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+QBASIC_DIR="$(dirname "$SCRIPT_DIR")"
 
 # Function to convert a single file
 convert_file() {
     local filename="$1"
-    local basename="${filename%.*}"
+    local dos_filename=$(echo "$filename" | sed 's|/|\\|g')
 
     echo "Converting: $filename"
 
@@ -78,7 +25,7 @@ cycles=max
 [autoexec]
 mount c "$QBASIC_DIR"
 c:
-QB.EXE $filename
+qbasic-runtime\\QB.EXE $dos_filename
 EOF
 
     # Launch DOSBox in background
@@ -160,9 +107,31 @@ convert_single() {
 
 # Interactive mode - one file at a time with user control
 convert_interactive() {
+    local target_dir="${1:-.}"
+
     echo "=== QBasic Binary to Text Converter (Interactive Mode) ==="
     echo ""
-    echo "This will open each binary .BAS file in QuickBASIC."
+    echo "Scanning for binary tokenized files in: $target_dir"
+    echo ""
+
+    # Find binary files (start with 0xFC byte)
+    local binary_files=()
+    while IFS= read -r -d '' file; do
+        if [ -f "$file" ] && head -c1 "$file" | xxd -p | grep -q "^fc"; then
+            binary_files+=("$file")
+        fi
+    done < <(find "$QBASIC_DIR/$target_dir" -name "*.BAS" -o -name "*.bas" -print0 2>/dev/null)
+
+    if [ ${#binary_files[@]} -eq 0 ]; then
+        echo "No binary tokenized files found."
+        exit 0
+    fi
+
+    echo "Found ${#binary_files[@]} binary file(s):"
+    for file in "${binary_files[@]}"; do
+        echo "  ${file#$QBASIC_DIR/}"
+    done
+    echo ""
     echo "For each file, manually save as Text format:"
     echo "  1. File menu (Alt+F)"
     echo "  2. Save As... (A)"
@@ -173,9 +142,12 @@ convert_interactive() {
     echo "Press Enter to start, or Ctrl+C to cancel..."
     read
 
-    for file in "${BINARY_FILES[@]}"; do
+    for file in "${binary_files[@]}"; do
+        local rel_path="${file#$QBASIC_DIR/}"
+        local dos_path=$(echo "$rel_path" | sed 's|/|\\|g')
+
         echo ""
-        echo ">>> Opening: $file"
+        echo ">>> Opening: $rel_path"
         echo "    (Save as Text, then exit QB to continue)"
 
         # Launch DOSBox with QB and this file
@@ -191,7 +163,7 @@ cycles=max
 [autoexec]
 mount c "$QBASIC_DIR"
 c:
-QB.EXE $file
+qbasic-runtime\\QB.EXE $dos_path
 EOF
 
         # Detect which DOSBox is installed
@@ -206,7 +178,7 @@ EOF
             exit 1
         fi
 
-        echo "    Converted: $file"
+        echo "    Converted: $rel_path"
     done
 
     echo ""
@@ -218,52 +190,48 @@ show_help() {
     echo "QBasic Binary to Text Converter"
     echo ""
     echo "Usage:"
-    echo "  $0 interactive    - Convert files one at a time (manual save)"
-    echo "  $0 single <file>  - Convert a single file"
-    echo "  $0 list           - List all binary files that need conversion"
+    echo "  $0 interactive [dir]  - Convert binary files in directory (default: all)"
+    echo "  $0 single <file>      - Convert a single file"
+    echo "  $0 list [dir]         - List binary files that need conversion"
+    echo ""
+    echo "Examples:"
+    echo "  $0 list                        - List all binary files"
+    echo "  $0 list 90s-shareware          - List binary files in 90s-shareware/"
+    echo "  $0 interactive my-programs     - Convert files in my-programs/"
+    echo "  $0 single my-programs/misc/TEST.BAS"
     echo ""
     echo "Files will be saved in-place as Text format by QuickBASIC."
 }
 
 # List files that need conversion
 list_files() {
-    echo "Binary tokenized files that need conversion:"
+    local target_dir="${1:-.}"
+
+    echo "Scanning for binary tokenized files in: $target_dir"
     echo ""
-    for file in "${BINARY_FILES[@]}"; do
-        echo "  $file"
-    done
+
+    local count=0
+    while IFS= read -r -d '' file; do
+        if [ -f "$file" ] && head -c1 "$file" | xxd -p | grep -q "^fc"; then
+            echo "  ${file#$QBASIC_DIR/}"
+            ((count++))
+        fi
+    done < <(find "$QBASIC_DIR/$target_dir" -name "*.BAS" -o -name "*.bas" -print0 2>/dev/null)
+
     echo ""
-    echo "Total: ${#BINARY_FILES[@]} files"
-    echo ""
-    echo "Noose subdirectory files (convert separately):"
-    echo "  Noose/B-Bots.BAS"
-    echo "  Noose/BCOMPILE.BAS"
-    echo "  Noose/BIT_DEMO.BAS"
-    echo "  Noose/DECRYPT.BAS"
-    echo "  Noose/DIALNET.BAS"
-    echo "  Noose/FRACTAL.BAS"
-    echo "  Noose/HDWIN.BAS"
-    echo "  Noose/LINEOUT.BAS"
-    echo "  Noose/LOGIX.BAS"
-    echo "  Noose/MEMSCAN.BAS"
-    echo "  Noose/MUS_LAB.BAS"
-    echo "  Noose/PARSE.BAS"
-    echo "  Noose/QPAINT.BAS"
-    echo "  Noose/SANDPILE.BAS"
-    echo "  Noose/SUD.BAS"
-    echo "  Noose/UATTACK.BAS"
+    echo "Total: $count binary file(s) need conversion"
 }
 
 # Main
 case "${1:-help}" in
     interactive)
-        convert_interactive
+        convert_interactive "$2"
         ;;
     single)
         convert_single "$2"
         ;;
     list)
-        list_files
+        list_files "$2"
         ;;
     *)
         show_help
