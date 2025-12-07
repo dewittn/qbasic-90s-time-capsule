@@ -5,11 +5,13 @@ A collection of QBasic programs I wrote in middle school and high school, preser
 ## Highlighted Programs
 
 ### TERMINAL.BAS - Serial Chat Client
+
 **Location:** `my-programs/chat-terminal/`
 
 A feature-rich serial port terminal program for PC-to-PC chat over null modem cables. This was part of a friendly "chat war" with a friend - we'd implement pranks and counter-measures against each other.
 
 **Features:**
+
 - Dual COM port support (COM1 for direct connection, COM2 for modem)
 - Split-screen UI with status bar
 - **Deflector** - Bounce incoming messages back at the sender
@@ -20,53 +22,56 @@ A feature-rich serial port terminal program for PC-to-PC chat over null modem ca
 - Session logging to file
 - Message recording and playback
 
-*The TERMINA2, TERMINA3, and TERMINA4 files show the evolution as new features were added.*
+_The TERMINA2, TERMINA3, and TERMINA4 files show the evolution as new features were added._
 
 ---
 
 ### Screensaver Series
+
 **Location:** `my-programs/screensavers/`
 
 A progression of bouncing line/shape animations, each iteration adding new features:
 
-| Program | Description |
-|---------|-------------|
-| **BOUNCE.BAS** | Simple bouncing circle |
-| **BOUNCE2.BAS** | Added color cycling |
-| **BOUNCE3.BAS** | Two objects with collision detection |
-| **LINES.BAS** | Radial lines creating interference patterns |
-| **SCREEN.BAS** | 20-point bouncing polygon |
-| **SHBONCE2.BAS** | Mesh-connected bouncing points |
+| Program          | Description                                             |
+| ---------------- | ------------------------------------------------------- |
+| **BOUNCE.BAS**   | Simple bouncing circle                                  |
+| **BOUNCE2.BAS**  | Added color cycling                                     |
+| **BOUNCE3.BAS**  | Two objects with collision detection                    |
+| **LINES.BAS**    | Radial lines creating interference patterns             |
+| **SCREEN.BAS**   | 20-point bouncing polygon                               |
+| **SHBONCE2.BAS** | Mesh-connected bouncing points                          |
 | **SQUBONC3.BAS** | User-configurable: choose number of shapes and vertices |
 
-*These demonstrate learning graphics programming through iteration - each version building on the last.*
+_These demonstrate learning graphics programming through iteration - each version building on the last._
 
 ---
 
 ### Math Homework Helpers
+
 **Location:** `my-programs/math-helpers/`
 
 Programs I wrote to help with (or automate) algebra homework:
 
-| Program | Description |
-|---------|-------------|
-| **MATH2.BAS** | Factors quadratic trinomials (x² + bx + c) |
-| **MATH3.BAS** | Handles leading coefficients (ax² + bx + c) |
+| Program          | Description                                          |
+| ---------------- | ---------------------------------------------------- |
+| **MATH2.BAS**    | Factors quadratic trinomials (x² + bx + c)           |
+| **MATH3.BAS**    | Handles leading coefficients (ax² + bx + c)          |
 | **CHAPTER4.BAS** | Solves systems of linear equations using elimination |
-| **SENSUB.BAS** | Synthetic division calculator - shows all work |
-| **ABLRA*.BAS** | Various algebra problem solvers |
+| **SENSUB.BAS**   | Synthetic division calculator - shows all work       |
+| **ABLRA\*.BAS**  | Various algebra problem solvers                      |
 
-*Complete with typos like "Eneter" and "pionts" - authentic middle school code!*
+_Complete with typos like "Eneter" and "pionts" - authentic middle school code!_
 
 ---
 
 ### Prank Programs
+
 **Location:** `my-programs/pranks/`
 
-| Program | Description |
-|---------|-------------|
-| **FAKEDOS.BAS** | Fake DOS prompt that pretends to delete files, requires a Fibonacci sequence to escape (11235813213455) |
-| **FORMAT_C.BAS** | Fake format C: command |
+| Program          | Description                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------------- |
+| **FAKEDOS.BAS**  | Fake DOS prompt that pretends to delete files, requires a Fibonacci sequence to escape (11235813213455) |
+| **FORMAT_C.BAS** | Fake format C: command                                                                                  |
 
 ---
 
@@ -115,6 +120,7 @@ The `tools/qb.sh` script launches programs in DOSBox:
 ```
 
 ### Requirements
+
 - [DOSBox](https://www.dosbox.com/) or [DOSBox-X](https://dosbox-x.com/)
 - The QuickBASIC 4.5 runtime (included in `qbasic-runtime/`)
 
@@ -135,18 +141,17 @@ Select programs have been converted to modern Python, preserving the original fu
 
 ### Screensavers (pygame)
 
-| Python File | Original | Description |
-|-------------|----------|-------------|
-| `LINES.py` | LINES.BAS | Radial lines from center with wave pattern |
-| `BOUNCE.py` | BOUNCE.BAS | Bouncing circle with line to center (SPACE toggles size) |
-| `SQUBONC3.py` | SQUBONC3.BAS | Configurable bouncing polygons |
-| `SCREEN.py` | SCREEN.BAS | 20-point polygon with RGB color cycling |
+| Python File   | Original     | Description                                              |
+| ------------- | ------------ | -------------------------------------------------------- |
+| `LINES.py`    | LINES.BAS    | Radial lines from center with wave pattern               |
+| `BOUNCE.py`   | BOUNCE.BAS   | Bouncing circle with line to center (SPACE toggles size) |
+| `SQUBONC3.py` | SQUBONC3.BAS | Configurable bouncing polygons                           |
+| `SCREEN.py`   | SCREEN.BAS   | 20-point polygon with RGB color cycling                  |
 
 ### Running the Python Screensavers
 
 ```bash
 # Set up virtual environment (one-time)
-cd my-programs/screensavers
 python3 -m venv venv
 source venv/bin/activate
 pip install pygame
@@ -162,6 +167,7 @@ deactivate
 ```
 
 **Controls:**
+
 - **ESC** or close window to quit
 - **SPACE** (BOUNCE.py only) - Toggle radius growth on/off
 
@@ -169,11 +175,13 @@ deactivate
 
 ### Chat Terminal (curses TUI)
 
-| Python File | Original | Location | Description |
-|-------------|----------|----------|-------------|
+| Python File   | Original     | Location                     | Description                                |
+| ------------- | ------------ | ---------------------------- | ------------------------------------------ |
 | `TERMINAL.py` | TERMINAL.BAS | `my-programs/chat-terminal/` | Two-terminal chat with "chat war" features |
 
 A modern recreation of the 1475-line TERMINAL.BAS - a full-duplex chat client originally designed for serial port communication, now using TCP sockets.
+
+![TERMINAL.py screenshot](TERMINAL.png)
 
 ```bash
 # Start server in one terminal
@@ -205,13 +213,13 @@ Port 9600 is used by default (matching the original baud rate for nostalgia).
 
 ### Math Helpers (no dependencies)
 
-| Python File | Original | Description |
-|-------------|----------|-------------|
-| `MATH2.py` | MATH2.BAS | Factor quadratics (x² + bx + c) |
-| `MATH3.py` | MATH3.BAS | Factor quadratics with leading coefficient (ax² + bx + c) |
-| `CHAPTER4.py` | CHAPTER4.BAS | Solve 2-variable linear systems |
-| `SENSUB.py` | SENSUB.BAS | Synthetic division calculator |
-| `BASES.py` | BASES.BAS | Number base conversion |
+| Python File   | Original     | Description                                               |
+| ------------- | ------------ | --------------------------------------------------------- |
+| `MATH2.py`    | MATH2.BAS    | Factor quadratics (x² + bx + c)                           |
+| `MATH3.py`    | MATH3.BAS    | Factor quadratics with leading coefficient (ax² + bx + c) |
+| `CHAPTER4.py` | CHAPTER4.BAS | Solve 2-variable linear systems                           |
+| `SENSUB.py`   | SENSUB.BAS   | Synthetic division calculator                             |
+| `BASES.py`    | BASES.BAS    | Number base conversion                                    |
 
 ```bash
 # Run directly (no setup needed)
@@ -222,10 +230,10 @@ python3 my-programs/math-helpers/SENSUB.py
 
 ### Other Terminal Programs (no dependencies)
 
-| Python File | Original | Location | Description |
-|-------------|----------|----------|-------------|
-| `FAKEDOS.py` | FAKEDOS.BAS | `my-programs/pranks/` | Fake DOS prompt prank |
-| `ASCII.py` | ASCII.BAS | `my-programs/misc/` | Random colored ASCII characters |
+| Python File  | Original    | Location              | Description                     |
+| ------------ | ----------- | --------------------- | ------------------------------- |
+| `FAKEDOS.py` | FAKEDOS.BAS | `my-programs/pranks/` | Fake DOS prompt prank           |
+| `ASCII.py`   | ASCII.BAS   | `my-programs/misc/`   | Random colored ASCII characters |
 
 ```bash
 # Run directly (no setup needed)
@@ -234,6 +242,7 @@ python3 my-programs/misc/ASCII.py
 ```
 
 **FAKEDOS.py** simulates a DOS prompt that:
+
 - Pretends to delete files with `DEL`
 - Shows "Squids Rule" in random colors on `CLS`
 - Reports "MS-DOS Version 1.00" on `VER`
@@ -246,6 +255,7 @@ python3 my-programs/misc/ASCII.py
 ## File Format Note
 
 QBasic saved files in two formats:
+
 - **Text** - Human-readable source code
 - **Binary tokenized** - Compressed format starting with `0xFC` byte
 
