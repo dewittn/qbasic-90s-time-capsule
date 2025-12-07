@@ -129,6 +129,120 @@ These programs were written between 1994-1997 when I was in 8th-9th grade. They 
 
 The code style reflects its era: line numbers (in some files), GOTO statements, global variables, and creative variable naming. It's preserved here as a time capsule of 1990s hobbyist programming.
 
+## Python Conversions
+
+Select programs have been converted to modern Python, preserving the original functionality while adding proper variable names and documentation. Easter egg typos from the originals are preserved as comments.
+
+### Screensavers (pygame)
+
+| Python File | Original | Description |
+|-------------|----------|-------------|
+| `LINES.py` | LINES.BAS | Radial lines from center with wave pattern |
+| `BOUNCE.py` | BOUNCE.BAS | Bouncing circle with line to center (SPACE toggles size) |
+| `SQUBONC3.py` | SQUBONC3.BAS | Configurable bouncing polygons |
+| `SCREEN.py` | SCREEN.BAS | 20-point polygon with RGB color cycling |
+
+### Running the Python Screensavers
+
+```bash
+# Set up virtual environment (one-time)
+cd my-programs/screensavers
+python3 -m venv venv
+source venv/bin/activate
+pip install pygame
+
+# Run any screensaver
+python LINES.py
+python BOUNCE.py
+python SQUBONC3.py
+python SCREEN.py
+
+# Deactivate when done
+deactivate
+```
+
+**Controls:**
+- **ESC** or close window to quit
+- **SPACE** (BOUNCE.py only) - Toggle radius growth on/off
+
+**Note:** On macOS, the pygame window may open behind other windows. Check your Dock or use Cmd+Tab to find it.
+
+### Chat Terminal (curses TUI)
+
+| Python File | Original | Location | Description |
+|-------------|----------|----------|-------------|
+| `TERMINAL.py` | TERMINAL.BAS | `my-programs/chat-terminal/` | Two-terminal chat with "chat war" features |
+
+A modern recreation of the 1475-line TERMINAL.BAS - a full-duplex chat client originally designed for serial port communication, now using TCP sockets.
+
+```bash
+# Start server in one terminal
+python3 my-programs/chat-terminal/TERMINAL.py --server
+
+# Connect client in another terminal
+python3 my-programs/chat-terminal/TERMINAL.py --client
+
+# Connect to a specific host
+python3 my-programs/chat-terminal/TERMINAL.py --client --host 192.168.1.5
+```
+
+**Chat War Features:**
+| Key | Feature | Description |
+|-----|---------|-------------|
+| 1 | Deflector | Bounce incoming messages back at sender |
+| 2 | ASCII Spam | Flood random ASCII characters |
+| 3 | Repeat Send | Continuously resend a message |
+| 4 | Anti-Deflector | Filter your own reflected messages |
+| 5 | No Input | Ignore all incoming messages |
+| 6 | Fake Disconnect | Pretend to leave, wait for keypress |
+| 7 | Record | Start/stop recording incoming messages |
+| 8 | Playback | Send the recorded message |
+| 9 | File Log | Log session to file |
+| Q | Quit | Exit the program |
+| F1 | Help | Toggle help overlay |
+
+Port 9600 is used by default (matching the original baud rate for nostalgia).
+
+### Math Helpers (no dependencies)
+
+| Python File | Original | Description |
+|-------------|----------|-------------|
+| `MATH2.py` | MATH2.BAS | Factor quadratics (x² + bx + c) |
+| `MATH3.py` | MATH3.BAS | Factor quadratics with leading coefficient (ax² + bx + c) |
+| `CHAPTER4.py` | CHAPTER4.BAS | Solve 2-variable linear systems |
+| `SENSUB.py` | SENSUB.BAS | Synthetic division calculator |
+| `BASES.py` | BASES.BAS | Number base conversion |
+
+```bash
+# Run directly (no setup needed)
+python3 my-programs/math-helpers/MATH2.py
+python3 my-programs/math-helpers/SENSUB.py
+# etc.
+```
+
+### Other Terminal Programs (no dependencies)
+
+| Python File | Original | Location | Description |
+|-------------|----------|----------|-------------|
+| `FAKEDOS.py` | FAKEDOS.BAS | `my-programs/pranks/` | Fake DOS prompt prank |
+| `ASCII.py` | ASCII.BAS | `my-programs/misc/` | Random colored ASCII characters |
+
+```bash
+# Run directly (no setup needed)
+python3 my-programs/pranks/FAKEDOS.py
+python3 my-programs/misc/ASCII.py
+```
+
+**FAKEDOS.py** simulates a DOS prompt that:
+- Pretends to delete files with `DEL`
+- Shows "Squids Rule" in random colors on `CLS`
+- Reports "MS-DOS Version 1.00" on `VER`
+- Requires the Fibonacci password `11235813213455` to `EXIT`
+
+**ASCII.py** prints random ASCII characters in random colors. Press **ESC** to quit.
+
+---
+
 ## File Format Note
 
 QBasic saved files in two formats:
