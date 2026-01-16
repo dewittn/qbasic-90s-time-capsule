@@ -34,6 +34,18 @@ QBasic saved programs in two formats: text (readable) and binary tokenized (0xFC
 ./tools/convert_binary.sh single <file.bas>
 ```
 
+### Running Tests
+```bash
+# Run all tests (auto-detects Python with pytest)
+./tools/run_tests.sh
+
+# Run specific test file with verbose output
+./tools/run_tests.sh my-programs/chat-terminal/test_terminal2.py -v
+
+# Run tests matching a pattern
+./tools/run_tests.sh -k "test_port"
+```
+
 ## Directory Structure
 
 - `my-programs/` - Personal programs organized by category:
