@@ -6,6 +6,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A historical software preservation project containing QBasic programs written in the early-to-mid 1990s (1994-1997). This is a time capsule of hobbyist programming from the DOS/QuickBASIC era, featuring personal projects, educational utilities, games/demos, and period-appropriate shareware.
 
+## Preservation Rules
+
+**CRITICAL: Never modify original QBasic files.** The `.BAS` files are historical artifacts preserved exactly as written, typos and all.
+
+- All new development happens in Python conversions only
+- Use 90s-style naming: `TERMINAL.py`, `TERMINAL2.py`, `BOUNCE3.py`, etc.
+- Preserve charming typos in comments as "easter eggs" (masage, resonding, charetors, etc.)
+- New Python versions should maintain the spirit of the originals
+
 ## Key Commands
 
 ### Running QBasic Programs
@@ -66,7 +75,7 @@ QBasic saved programs in two formats: text (readable) and binary tokenized (0xFC
 
 - `build-artifacts/` - Compiled .EXE, .OBJ, and data files
 
-- `tools/` - Modern helper scripts (qb.sh, convert_binary.sh)
+- `tools/` - Modern helper scripts (qb.sh, convert_binary.sh, run_tests.sh)
 
 ## Technical Context
 
@@ -74,3 +83,9 @@ QBasic saved programs in two formats: text (readable) and binary tokenized (0xFC
 - **Requirements**: DOSBox or DOSBox-X (tools auto-detect installation)
 - **Platform**: Scripts optimized for macOS (convert_binary.sh uses AppleScript)
 - **Code Style**: Authentic 90s hobbyist code with era-appropriate patterns (GOTO, global variables, line numbers in some files)
+
+## Git Workflow
+
+- Direct commits to main (no PRs needed)
+- This is a personal archive, not production code
+- Commit messages should be clear but casual
