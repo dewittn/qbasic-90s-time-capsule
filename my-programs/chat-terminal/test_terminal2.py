@@ -20,8 +20,6 @@ from TERMINAL2 import (
     parse_command,
     DEFAULT_PORT,
     DEFAULT_HOST,
-    BOT_CMD_FILE,
-    BOT_OUT_FILE,
 )
 
 
@@ -459,87 +457,6 @@ class TestEdgeCases:
             assert chat.state.connected is False
 
         run_async(run_test())
-
-
-class TestTmpDirectoryConfig:
-    """Tests for tmp directory configuration."""
-
-    def test_bot_cmd_file_is_local(self):
-        """Test that BOT_CMD_FILE points to local tmp directory."""
-        assert "qbasic-90s-time-capsule/tmp/" in BOT_CMD_FILE
-        assert BOT_CMD_FILE.endswith("terminal_bot_cmd.txt")
-
-    def test_bot_out_file_is_local(self):
-        """Test that BOT_OUT_FILE points to local tmp directory."""
-        assert "qbasic-90s-time-capsule/tmp/" in BOT_OUT_FILE
-        assert BOT_OUT_FILE.endswith("terminal_bot_out.txt")
-
-    def test_bot_files_same_directory(self):
-        """Test that both bot files are in the same directory."""
-        cmd_dir = os.path.dirname(BOT_CMD_FILE)
-        out_dir = os.path.dirname(BOT_OUT_FILE)
-        assert cmd_dir == out_dir
-
-
-class TestTmpDirectoryCleanup:
-    """Tests for tmp directory cleanup on exit."""
-
-    def test_cleanup_removes_files(self):
-        """Test that cleanup removes files from tmp directory."""
-        tmp_dir = os.path.dirname(BOT_CMD_FILE)
-
-        # Ensure tmp directory exists
-        os.makedirs(tmp_dir, exist_ok=True)
-
-        # Create test files
-        test_file1 = os.path.join(tmp_dir, "test_cleanup_1.txt")
-        test_file2 = os.path.join(tmp_dir, "test_cleanup_2.txt")
-
-        with open(test_file1, "w") as f:
-            f.write("test1")
-        with open(test_file2, "w") as f:
-            f.write("test2")
-
-        assert os.path.exists(test_file1)
-        assert os.path.exists(test_file2)
-
-        # Simulate cleanup logic from TerminalChat.main_loop finally block
-        if os.path.isdir(tmp_dir):
-            for filename in os.listdir(tmp_dir):
-                filepath = os.path.join(tmp_dir, filename)
-                try:
-                    if os.path.isfile(filepath):
-                        os.remove(filepath)
-                except OSError:
-                    pass
-
-        assert not os.path.exists(test_file1)
-        assert not os.path.exists(test_file2)
-
-    def test_cleanup_preserves_directory(self):
-        """Test that cleanup preserves the tmp directory itself."""
-        tmp_dir = os.path.dirname(BOT_CMD_FILE)
-
-        # Ensure tmp directory exists
-        os.makedirs(tmp_dir, exist_ok=True)
-
-        # Create and cleanup a test file
-        test_file = os.path.join(tmp_dir, "test_preserve.txt")
-        with open(test_file, "w") as f:
-            f.write("test")
-
-        # Simulate cleanup
-        if os.path.isdir(tmp_dir):
-            for filename in os.listdir(tmp_dir):
-                filepath = os.path.join(tmp_dir, filename)
-                try:
-                    if os.path.isfile(filepath):
-                        os.remove(filepath)
-                except OSError:
-                    pass
-
-        # Directory should still exist
-        assert os.path.isdir(tmp_dir)
 
 
 class TestBotControllerPortRetry:

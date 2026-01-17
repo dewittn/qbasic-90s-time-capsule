@@ -3,10 +3,12 @@
 TERMINAL2.py - Bot-Enabled Chat War Client
 
 An enhanced version of TERMINAL.py that allows Claude Code to connect and
-control chat sessions programmatically. Supports two bot modes:
+control chat sessions programmatically via a control port.
 
-1. Headless Mode: Run without TUI, control via stdin/stdout
-2. Bot Takeover: Press 0 in TUI to let Claude take over your session
+Bot Control:
+    Press 0 in TUI to open the bot control port (default 9601).
+    Connect using: python bot_bridge.py --port 9601
+    Claude Code can then send commands and receive chat messages.
 
 Original TERMINAL.BAS features preserved:
 - Full-duplex messaging between two terminals
@@ -28,7 +30,7 @@ Usage:
     python TERMINAL2.py --help                # Show help
 
 Controls (TUI mode):
-    0 - Activate Bot Control (spawns Claude)
+    0 - Toggle Bot Control Port (for Claude Code connection)
     1 - Toggle Deflector (bounce messages back)
     2 - Toggle ASCII Spam (send random characters)
     3 - Toggle Repeat Send (continuously resend message)
@@ -48,9 +50,7 @@ Original: TERMINAL.BAS
 import argparse
 import asyncio
 import curses
-import os
 import random
-import subprocess
 import sys
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -60,10 +60,6 @@ from typing import Optional, TextIO
 DEFAULT_PORT = 9600
 DEFAULT_HOST = "localhost"
 DEFAULT_CONTROL_PORT = 9601
-
-# Temp files for bot communication
-BOT_CMD_FILE = "/Users/dewittn/Programing/dewittn/Other/qbasic-90s-time-capsule/tmp/terminal_bot_cmd.txt"
-BOT_OUT_FILE = "/Users/dewittn/Programing/dewittn/Other/qbasic-90s-time-capsule/tmp/terminal_bot_out.txt"
 
 
 @dataclass
@@ -107,11 +103,6 @@ class ChatState:
 
     # Bot control state (NEW in TERMINAL2)
     bot_active: bool = False
-    bot_process: Optional[subprocess.Popen] = None
-    bot_prompt_mode: bool = False
-    bot_prompt_text: str = ""
-    bot_reader: Optional[asyncio.StreamReader] = None
-    bot_writer: Optional[asyncio.StreamWriter] = None
 
 
 def parse_command(line: str) -> tuple[str, str]:
@@ -766,12 +757,8 @@ class TerminalChat:
         """Draw the input area with current text."""
         self.input_win.clear()
 
-        # Show the current input buffer (or bot prompt if in that mode)
         try:
-            if self.state.bot_prompt_mode:
-                self.input_win.addstr(0, 0, "Bot instructions: " + self.state.bot_prompt_text)
-            else:
-                self.input_win.addstr(0, 0, "> " + self.state.outgoing_buffer)
+            self.input_win.addstr(0, 0, "> " + self.state.outgoing_buffer)
         except curses.error:
             pass
 
@@ -786,7 +773,8 @@ class TerminalChat:
             "=== TERMINAL2.py HELP ===",
             "",
             "Bot Control (NEW):",
-            "  0 - Activate Bot: Spawns Claude to control chat",
+            "  0 - Toggle Bot Port: Opens control port for Claude",
+            "      Use bot_bridge.py to connect",
             "",
             "Chat War Features:",
             "  1 - Deflector: Bounce incoming messages back",
@@ -848,70 +836,6 @@ class TerminalChat:
 
         self.stdscr.noutrefresh()
 
-    def _draw_bot_prompt(self):
-        """Draw bot prompt overlay."""
-        if not self.state.bot_prompt_mode:
-            return
-
-        prompt_text = [
-            "What should the bot do?",
-            "",
-            "> " + self.state.bot_prompt_text + "_",
-            "",
-            "[Enter] Start  [Esc] Cancel",
-        ]
-
-        # Calculate overlay position
-        overlay_height = len(prompt_text) + 2
-        overlay_width = max(50, max(len(line) for line in prompt_text) + 4)
-        start_y = (self.height - overlay_height) // 2
-        start_x = (self.width - overlay_width) // 2
-
-        # Draw overlay background
-        for i in range(overlay_height):
-            try:
-                self.stdscr.addstr(
-                    start_y + i,
-                    start_x,
-                    " " * overlay_width,
-                    curses.color_pair(1),
-                )
-            except curses.error:
-                pass
-
-        # Draw text
-        for i, line in enumerate(prompt_text):
-            try:
-                self.stdscr.addstr(
-                    start_y + i + 1,
-                    start_x + 2,
-                    line[: overlay_width - 4],
-                    curses.color_pair(3),
-                )
-            except curses.error:
-                pass
-
-        # Draw border
-        try:
-            self.stdscr.addstr(
-                start_y, start_x, "+" + "=" * (overlay_width - 2) + "+", curses.color_pair(2)
-            )
-            self.stdscr.addstr(
-                start_y + overlay_height - 1,
-                start_x,
-                "+" + "=" * (overlay_width - 2) + "+",
-                curses.color_pair(2),
-            )
-            for i in range(1, overlay_height - 1):
-                self.stdscr.addch(start_y + i, start_x, "|", curses.color_pair(2))
-                self.stdscr.addch(
-                    start_y + i, start_x + overlay_width - 1, "|", curses.color_pair(2)
-                )
-        except curses.error:
-            pass
-
-        self.stdscr.noutrefresh()
-
     def draw(self):
         """Redraw the entire screen."""
         self._draw_frame()
@@ -920,19 +844,14 @@ class TerminalChat:
         self._draw_incoming()
         self._draw_input()
         self._draw_help()
-        self._draw_bot_prompt()
 
         # Position cursor in input area
-        if self.state.bot_prompt_mode:
-            # Don't move cursor, overlay handles it
-            pass
-        else:
-            cursor_x = len(self.state.outgoing_buffer) + 2
-            if cursor_x < self.main_width:
-                try:
-                    self.input_win.move(0, cursor_x)
-                except curses.error:
-                    pass
+        cursor_x = len(self.state.outgoing_buffer) + 2
+        if cursor_x < self.main_width:
+            try:
+                self.input_win.move(0, cursor_x)
+            except curses.error:
+                pass
 
         curses.doupdate()
 
@@ -1153,155 +1072,22 @@ class TerminalChat:
             self.add_system_message("File logging OFF")
 
     async def activate_bot(self):
-        """Activate bot control mode - show prompt, spawn Claude."""
+        """Toggle bot control mode - opens/closes the control port."""
         if self.state.bot_active:
-            # Bot already active, deactivate it
+            # Bot control active, deactivate it
             if self.bot_controller:
                 await self.bot_controller.stop()
-            if self.state.bot_process:
-                self.state.bot_process.terminate()
-                self.state.bot_process = None
             self.state.bot_active = False
-            self.add_system_message("Bot deactivated")
+            self.add_system_message("Bot control port closed")
         else:
-            # Show prompt overlay
-            self.state.bot_prompt_mode = True
-            self.state.bot_prompt_text = ""
-
-    async def spawn_bot(self, instructions: str):
-        """Spawn Claude with the given instructions."""
-        # Create temp files for communication
-        try:
-            # Clear/create command and output files
-            with open(BOT_CMD_FILE, "w") as f:
-                pass
-            with open(BOT_OUT_FILE, "w") as f:
-                pass
-        except IOError as e:
-            self.add_system_message(f"Failed to create bot files: {e}")
-            return
-
-        # Start bot controller to listen for connections
-        self.bot_controller = BotController(self, self.control_port)
-        await self.bot_controller.start()
-
-        # Build the Claude command
-        prompt = f"""You are controlling a TERMINAL2.py chat session.
-
-To send a message: echo 'send <message>' >> {BOT_CMD_FILE}
-To use features: echo 'toggle deflector' >> {BOT_CMD_FILE}
-Read responses from: {BOT_OUT_FILE}
-
-Available commands:
-- send <message>
-- toggle deflector/ascii/repeat/anti-deflector/no-input
-- start-recording / stop-recording
-- playback
-- status
-- quit
-
-Instructions from user: {instructions}
-
-Start chatting now. Read the output file periodically to see responses."""
-
-        try:
-            # Spawn Claude with scoped permissions
-            self.state.bot_process = subprocess.Popen(
-                [
-                    "claude",
-                    "--print",
-                    "--allowedTools",
-                    "Bash(send chat commands),Write(write to command file),Read(read chat output)",
-                    "-p",
-                    prompt,
-                ],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-            )
-            self.add_system_message(f"Bot spawned (PID: {self.state.bot_process.pid})")
-
-            # Start task to read bot commands from file
-            asyncio.create_task(self._read_bot_commands())
-
-        except FileNotFoundError:
-            self.add_system_message("Error: 'claude' CLI not found in PATH")
-            await self.bot_controller.stop()
-        except Exception as e:
-            self.add_system_message(f"Failed to spawn bot: {e}")
-            await self.bot_controller.stop()
-
-    async def _read_bot_commands(self):
-        """Read commands from bot command file and execute them."""
-        last_pos = 0
-
-        while self.running and self.state.bot_active:
-            try:
-                with open(BOT_CMD_FILE, "r") as f:
-                    f.seek(last_pos)
-                    new_content = f.read()
-                    last_pos = f.tell()
-
-                    if new_content:
-                        for line in new_content.strip().split("\n"):
-                            if line:
-                                await self._execute_bot_command(line)
-            except IOError:
-                pass
-
-            await asyncio.sleep(0.1)
-
-    async def _execute_bot_command(self, line: str):
-        """Execute a command from the bot."""
-        command, args = parse_command(line)
-
-        if command == "send" and args:
-            await self.send_message(args)
-            self.add_incoming_message(args, "BOT")
-
-            # Write to output file for bot to read
-            try:
-                with open(BOT_OUT_FILE, "a") as f:
-                    timestamp = datetime.now().strftime("%H:%M:%S")
-                    f.write(f"[{timestamp}] SENT: {args}\n")
-            except IOError:
-                pass
-
-        elif command == "toggle":
-            feature = args.lower().replace("-", "").replace("_", "")
-            if feature == "deflector":
-                self.toggle_deflector()
-            elif feature == "ascii":
-                self.toggle_ascii_spam()
-            elif feature == "repeat":
-                self.toggle_repeat()
-            elif feature == "antideflector":
-                self.toggle_anti_deflector()
-            elif feature == "noinput":
-                self.toggle_no_input()
-
-        elif command == "quit":
-            await self.activate_bot()  # Deactivate
+            # Start bot controller to listen for connections
+            self.bot_controller = BotController(self, self.control_port)
+            await self.bot_controller.start()
+            self.state.bot_active = True
+            self.add_system_message(f"Bot control ready - connect with: python bot_bridge.py --port {self.bot_controller.control_port}")
 
     async def handle_input(self, key: int) -> bool:
         """Handle keyboard input. Returns False to quit."""
-        # Bot prompt mode - special handling
-        if self.state.bot_prompt_mode:
-            if key == 27:  # ESC - cancel
-                self.state.bot_prompt_mode = False
-                self.state.bot_prompt_text = ""
-                self.add_system_message("Bot activation cancelled")
-            elif key == curses.KEY_ENTER or key == 10 or key == 13:
-                # Start bot with entered instructions
-                instructions = self.state.bot_prompt_text or "Chat naturally"
-                self.state.bot_prompt_mode = False
-                await self.spawn_bot(instructions)
-            elif key == curses.KEY_BACKSPACE or key == 127 or key == 8:
-                if self.state.bot_prompt_text:
-                    self.state.bot_prompt_text = self.state.bot_prompt_text[:-1]
-            elif 32 <= key <= 126:
-                self.state.bot_prompt_text += chr(key)
-            return True
-
         # Help screen dismissal
         if self.state.show_help:
             self.state.show_help = False
@@ -1460,11 +1246,9 @@ Start chatting now. Read the output file periodically to see responses."""
             repeat_task.cancel()
             connection_task.cancel()
 
-            # Stop bot if active
+            # Stop bot controller if active
             if self.bot_controller:
                 await self.bot_controller.stop()
-            if self.state.bot_process:
-                self.state.bot_process.terminate()
 
             if self.state.writer:
                 self.state.writer.close()
@@ -1475,17 +1259,6 @@ Start chatting now. Read the output file periodically to see responses."""
 
             if self.state.log_file:
                 self.state.log_file.close()
-
-            # Clear tmp directory contents
-            tmp_dir = os.path.dirname(BOT_CMD_FILE)
-            if os.path.isdir(tmp_dir):
-                for filename in os.listdir(tmp_dir):
-                    filepath = os.path.join(tmp_dir, filename)
-                    try:
-                        if os.path.isfile(filepath):
-                            os.remove(filepath)
-                    except OSError:
-                        pass
 
 
 def main(stdscr: curses.window, args: argparse.Namespace):
@@ -1515,8 +1288,9 @@ Examples:
     python TERMINAL2.py --server --headless -o log.txt   Headless server
 
 Bot Control:
-    Press 0 in TUI mode to activate Claude bot control.
-    The bot will take over your chat session!
+    Press 0 in TUI mode to open the bot control port.
+    Then connect with: python bot_bridge.py --port 9601
+    Claude Code can use this to control your chat session!
 
 Chat War Features:
     0-Bot  1-Deflector  2-ASCII  3-Repeat  4-Anti-DF  5-NoInput
